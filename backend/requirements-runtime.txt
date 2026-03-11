@@ -1,0 +1,13 @@
+# Runtime-only dependencies (no pytorch/sentence-transformers)
+fastapi>=0.115
+uvicorn[standard]>=0.34
+sqlalchemy>=2.0
+aiosqlite
+python-dotenv
+anthropic>=0.84
+chromadb>=1.0
+pdfplumber
+pymupdf
+pytesseract
+Pillow
+pydantic>=2.0

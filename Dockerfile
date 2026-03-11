@@ -1,33 +1,44 @@
-FROM python:3.12-slim
+# ---- Build stage: ingest PDFs (has pytorch + sentence-transformers) ----
+FROM python:3.12-slim AS builder
 
-# Install tesseract for OCR
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y tesseract-ocr && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-
-# Copy and install dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the embedding model
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
-# Copy backend code and PDFs
 COPY backend/ ./backend/
 COPY pdfs/ ./pdfs/
 
-# Ingest PDFs into ChromaDB during build
 ENV CHROMA_PERSIST_DIR=/app/chroma_data
 ENV PDF_DIR=/app/pdfs
 RUN cd /app/backend && python -c "import sys; sys.path.insert(0, '.'); from rag.ingest import ingest_all_pdfs; ingest_all_pdfs()"
 
-# Make everything writable (HF Spaces runs as non-root user 1000)
+# ---- Runtime stage: lightweight (no pytorch) ----
+FROM python:3.12-slim
+
+RUN apt-get update && apt-get install -y tesseract-ocr && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install only runtime dependencies (no sentence-transformers/pytorch)
+COPY backend/requirements-runtime.txt .
+RUN pip install --no-cache-dir -r requirements-runtime.txt
+
+# Copy backend code
+COPY backend/ ./backend/
+
+# Copy pre-built ChromaDB data from builder
+COPY --from=builder /app/chroma_data ./chroma_data
+
+# Make writable for HF Spaces (runs as user 1000)
 RUN chmod -R 777 /app
 
-# Set working directory to backend
 WORKDIR /app/backend
+
+ENV CHROMA_PERSIST_DIR=/app/chroma_data
 
 EXPOSE 7860
 
