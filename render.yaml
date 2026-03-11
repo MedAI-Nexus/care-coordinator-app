@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: neuronav-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: starter
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+      - key: DB_PATH
+        value: /data/neuronav.db
+      - key: CHROMA_PERSIST_DIR
+        value: /data/chroma_data
+      - key: PDF_DIR
+        value: /app/pdfs
+    disk:
+      name: neuronav-data
+      mountPath: /data
+      sizeGB: 1

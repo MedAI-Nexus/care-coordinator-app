@@ -1,0 +1,34 @@
+# Environment / Secrets
+.env
+.env.*
+
+# Database
+*.db
+
+# ChromaDB data (regenerated from PDFs on deploy)
+chroma_data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+backend/.venv/
+backend/uv.lock
+
+# Node
+frontend/node_modules/
+frontend/.next/
+frontend/next-env.d.ts
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Vercel
+.vercel

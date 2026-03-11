@@ -1,0 +1,13 @@
+frontend/
+.env
+*.db
+chroma_data/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+scripts/
+backend/.venv/
+backend/.python-version
+backend/pyproject.toml
+backend/uv.lock

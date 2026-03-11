@@ -1,0 +1,28 @@
+FROM python:3.12-slim
+
+# Install tesseract for OCR
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy and install dependencies
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Pre-download the embedding model
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
+
+# Copy backend code and PDFs
+COPY backend/ ./backend/
+COPY pdfs/ ./pdfs/
+
+# Set working directory to backend
+WORKDIR /app/backend
+
+EXPOSE 8000
+
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+CMD ["/app/start.sh"]
