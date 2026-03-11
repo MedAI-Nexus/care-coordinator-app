@@ -3,19 +3,16 @@ set -e
 
 CHROMA_DIR="${CHROMA_PERSIST_DIR:-/data/chroma_data}"
 
-# Ingest PDFs into ChromaDB if not already done
-if [ ! -d "$CHROMA_DIR" ] || [ -z "$(ls -A "$CHROMA_DIR" 2>/dev/null)" ]; then
-    echo "Ingesting PDFs into ChromaDB..."
-    cd /app/backend
-    python -c "
-import sys
-sys.path.insert(0, '.')
-from rag.ingest import ingest_all_pdfs
-ingest_all_pdfs()
-"
-    echo "PDF ingestion complete."
-else
-    echo "ChromaDB data already exists, skipping ingestion."
+# Copy pre-built ChromaDB data to persistent disk if not already there
+if [ "$CHROMA_DIR" != "/app/chroma_data" ]; then
+    if [ ! -d "$CHROMA_DIR" ] || [ -z "$(ls -A "$CHROMA_DIR" 2>/dev/null)" ]; then
+        echo "Copying pre-built ChromaDB data to persistent disk..."
+        mkdir -p "$CHROMA_DIR"
+        cp -r /app/chroma_data/* "$CHROMA_DIR"/
+        echo "ChromaDB data copied."
+    else
+        echo "ChromaDB data already exists on persistent disk."
+    fi
 fi
 
 # Initialize database

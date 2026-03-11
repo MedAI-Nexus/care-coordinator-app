@@ -1,12 +1,27 @@
 """Query ChromaDB for relevant chunks."""
 
 import chromadb
+from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
 from config import CHROMA_PERSIST_DIR
+
+_ef = None
+
+
+def get_embedding_function():
+    global _ef
+    if _ef is None:
+        _ef = SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+    return _ef
 
 
 def get_collection():
+    ef = get_embedding_function()
     client = chromadb.PersistentClient(path=CHROMA_PERSIST_DIR)
-    return client.get_or_create_collection(name="neuronav_docs")
+    return client.get_or_create_collection(
+        name="neuronav_docs",
+        embedding_function=ef,
+        metadata={"hnsw:space": "cosine"},
+    )
 
 
 def search(query: str, drug_filter: str = None, doc_type_filter: str = None, n_results: int = 5) -> list:

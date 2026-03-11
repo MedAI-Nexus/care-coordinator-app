@@ -18,6 +18,11 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 COPY backend/ ./backend/
 COPY pdfs/ ./pdfs/
 
+# Ingest PDFs into ChromaDB during build (more memory available than at runtime)
+ENV CHROMA_PERSIST_DIR=/app/chroma_data
+ENV PDF_DIR=/app/pdfs
+RUN cd /app/backend && python -c "import sys; sys.path.insert(0, '.'); from rag.ingest import ingest_all_pdfs; ingest_all_pdfs()"
+
 # Set working directory to backend
 WORKDIR /app/backend
 
