@@ -11,16 +11,10 @@ from routers import chat, users, calendar, wellbeing, appointments, conversation
 
 app = FastAPI(title="NeuroNav API", version="1.0.0")
 
-allowed_origins = [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    FRONTEND_URL,
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
