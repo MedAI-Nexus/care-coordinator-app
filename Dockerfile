@@ -18,15 +18,18 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 COPY backend/ ./backend/
 COPY pdfs/ ./pdfs/
 
-# Ingest PDFs into ChromaDB during build (more memory available than at runtime)
+# Ingest PDFs into ChromaDB during build
 ENV CHROMA_PERSIST_DIR=/app/chroma_data
 ENV PDF_DIR=/app/pdfs
 RUN cd /app/backend && python -c "import sys; sys.path.insert(0, '.'); from rag.ingest import ingest_all_pdfs; ingest_all_pdfs()"
 
+# Make everything writable (HF Spaces runs as non-root user 1000)
+RUN chmod -R 777 /app
+
 # Set working directory to backend
 WORKDIR /app/backend
 
-EXPOSE 8000
+EXPOSE 7860
 
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
